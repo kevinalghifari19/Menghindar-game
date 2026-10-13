@@ -8,6 +8,9 @@ public class GameController : MonoBehaviour
     public Canvas gameOverCanvas;
     public TMP_Text timerText;
 
+    private float timer = 0f;
+    private bool isGameRunning = true;
+
     void Start()
     {
         // Sembunyikan Game Over Canvas di awal
@@ -16,16 +19,33 @@ public class GameController : MonoBehaviour
             gameOverCanvas.gameObject.SetActive(false);
         }
 
-        // Subscribe ke event playerDied dari PlayerController
+        // Subscribe ke event playerDied
         if (playerController != null)
         {
             playerController.playerDied += WhenPlayerDies;
         }
     }
 
+    void Update()
+    {
+        // Hitung waktu selama game berjalan
+        if (isGameRunning)
+        {
+            timer += Time.deltaTime;
+            
+            // Tampilkan timer di layar (1 angka di belakang koma)
+            if (timerText != null)
+            {
+                timerText.text = "You Lasted: " + timer.ToString("F1");
+            }
+        }
+    }
+
     // Dipanggil saat player mati
     void WhenPlayerDies()
     {
+        isGameRunning = false; // Hentikan timer
+        
         // Tampilkan Game Over Canvas
         if (gameOverCanvas != null)
         {
@@ -42,13 +62,13 @@ public class GameController : MonoBehaviour
         // Kembalikan waktu ke normal
         Time.timeScale = 1f;
         
-        // Load ulang scene saat ini
+        // Load ulang scene
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
-    // Cleanup saat object dihancurkan
     void OnDestroy()
     {
+        // Cleanup
         if (playerController != null)
         {
             playerController.playerDied -= WhenPlayerDies;
